@@ -1,6 +1,5 @@
 import requests, json, time, telebot, re, os
 from configparser import ConfigParser as configparser
-from telebot.apihelper import answer_callback_query
 from tinydb import TinyDB, Query
 #Импорт команд
 from commands import *
