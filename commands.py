@@ -1,9 +1,11 @@
 import time, base64
 
+#Закодировать в b64
 def b64encode(text):
     bytes = base64.b64encode(text.encode("ascii"))
     return bytes.decode("ascii")
 
+#Разкодировать из b64
 def b64decode(text):
     bytes = base64.b64decode(text.encode("ascii"))
     return bytes.decode("ascii")
