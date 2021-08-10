@@ -1,4 +1,6 @@
 import time
+
+#Визуальный разделитель для денег
 def convert(bal):
     if len(bal) >= 3:
         money = bal[:-2]+'.'+bal[-2:]
@@ -10,9 +12,11 @@ def convert(bal):
         money = '0.0'+bal[-2:]
         return money
 
+#Унать время в UNIX
 def tCurrent():
     return int(time.time())
 
+#Кешированый ответ
 def balance(api):
     osn_res, alr_res = str(), str()
     for numb in range (0, len(api["accounts"])):
