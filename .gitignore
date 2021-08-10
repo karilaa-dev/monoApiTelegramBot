@@ -7,6 +7,4 @@ __pycache__/
 /config.ini
 /db.json
 /test.py
-
-#file types
-.code-workspace
+/monoApi.code-workspace
