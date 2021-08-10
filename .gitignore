@@ -1,6 +1,9 @@
+#folders
+__pycache__/
+
+#files
 /api.py
 /bot.py
 /config.ini
 /db.json
-__pycache__/
 /test.py
