@@ -71,18 +71,23 @@ def send_text(message):
             bot.register_next_step_handler(message, reset)
         #Посмотреть токен
         elif text == '/token' or text == 'Просмотреть токен':
-            bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{b64decode(db.search((find.id == int(message.chat.id)))[0]["api"])}</code>', parse_mode="HTML")
+            dbreq = db.search((find.id == int(message.chat.id)))[0]["api"]
+            if dbreq != None:
+                result = b64decode(dbreq)
+            else:
+                result = 'Токен отсутствует'
+            bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{result}</code>', parse_mode="HTML")
         #Назад в главное меню
         elif text == 'Назад':
             bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
         #Баланс
         elif text == '/balance' or text == 'Баланс':
             user = db.search((find.id == message.chat.id))[0]
-            headers = {'X-Token': b64decode(user["api"])}
-            delay = user["delay"]
             if user["api"] == None:
                 bot.send_message(message.chat.id, 'Вы не добавили токен, добавте его через меню', reply_markup=keyboard)
             else:
+                headers = {'X-Token': b64decode(user["api"])}
+                delay = user["delay"]
                 if delay < tCurrent():
                     api = json.loads(requests.get("https://api.monobank.ua/personal/client-info",headers=headers).text)
                     if "errorDescription" in api:
