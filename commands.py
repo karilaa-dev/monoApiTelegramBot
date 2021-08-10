@@ -1,4 +1,12 @@
-import time
+import time, base64
+
+def b64encode(text):
+    bytes = base64.b64encode(text.encode("ascii"))
+    return bytes.decode("ascii")
+
+def b64decode(text):
+    bytes = base64.b64decode(text.encode("ascii"))
+    return bytes.decode("ascii")
 
 #Визуальный разделитель для денег
 def convert(bal):

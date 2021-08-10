@@ -71,14 +71,14 @@ def send_text(message):
             bot.register_next_step_handler(message, reset)
         #Посмотреть токен
         elif text == '/token' or text == 'Просмотреть токен':
-            bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{db.search((find.id == int(message.chat.id)))[0]["api"]}</code>', parse_mode="HTML")
+            bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{b64decode(db.search((find.id == int(message.chat.id)))[0]["api"])}</code>', parse_mode="HTML")
         #Назад в главное меню
         elif text == 'Назад':
             bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
         #Баланс
         elif text == '/balance' or text == 'Баланс':
             user = db.search((find.id == message.chat.id))[0]
-            headers = {'X-Token': user["api"]}
+            headers = {'X-Token': b64decode(user["api"])}
             delay = user["delay"]
             if user["api"] == None:
                 bot.send_message(message.chat.id, 'Вы не добавили токен, добавте его через меню', reply_markup=keyboard)
@@ -125,10 +125,10 @@ def changetoken(message):
                 if tTest["errorDescription"] == "Missing one of required headers 'X-Token' or 'X-Key-Id'" or tTest["errorDescription"] == "Unknown 'X-Token'":
                     bot.send_message(message.chat.id, 'Ошибка, вы ввели неправильный токен', reply_markup=keyboardOpt)
                 else:
-                    db.update({'api': message.text}, find.id == message.chat.id)
+                    db.update({'api': b64encode(message.text)}, find.id == message.chat.id)
                     bot.send_message(message.chat.id, 'Вы успешно изменили токен', reply_markup=keyboard)
             else:
-                db.update({'api': message.text}, find.id == message.chat.id)
+                db.update({'api': b64encode(message.text)}, find.id == message.chat.id)
                 db.update({'name': tTest["name"]}, find.id == message.chat.id)
                 bot.send_message(message.chat.id, 'Вы успешно изменили токен', reply_markup=keyboard)
         else:
