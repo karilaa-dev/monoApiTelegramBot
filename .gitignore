@@ -2,3 +2,5 @@
 /bot.py
 /config.ini
 /db.json
+__pycache__/
+/test.py

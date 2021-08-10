@@ -1,51 +1,79 @@
-import requests, json, time, telebot, re
+import requests, json, time, telebot, re, os
 from configparser import ConfigParser as configparser
 from tinydb import TinyDB, Query
 from commands import *
 from keyboards import *
 
-config = configparser()  # создаём объекта парсера
-config.read("config.ini")
-
+#Настройка базы и чтения конфига
+config = configparser()
 db = TinyDB('db.json')
 find = Query()
 
+#Проверка существования config.ini
+if not os.path.exists('config.ini'):
+    print("Не найден конфиг файл!!!")
+    token_req = input("Введите токен бота:\n")
+    admin_req = input("Введите айди админа:\n")
+    config['MonoApi'] = {'token': token_req, 'admin': admin_req}
+    config.write(open('config.ini', 'w'))
+    print("'nСоздан файл с конфигом, при нужде его можно подправить вручную.")
+
+#Загрузка конфига
+config.read("config.ini")
+
+#Загрузка id админа
+admin_id = int(config["MonoApi"]["admin"])
+
+#Проверка существования db.json
+if db.search((find.id == admin_id)) == []:
+    db.insert({'id': int(admin_id), 'name': None, "delay": 0, "api": None, "req": None})
+    print("\nСоздана база данных с доступом для админа.")
+
+#Запуск бота
 bot = telebot.TeleBot(config["MonoApi"]["token"])
-
-admin_id = config["MonoApi"]["admin"]
-
 print("Бот запущен")
 
+#Основной блок бота
 @bot.message_handler(content_types=['text'])
 def send_text(message):
     bot.register_next_step_handler(message, send_text)
     text = message.text
-    if message.chat.id == 217362163 or any(db.search((find.id == message.chat.id))) == True:
+    #Проверка доступа
+    if message.chat.id == admin_id or any(db.search((find.id == message.chat.id))) == True:
         if text == '/start':
             startMessage = '<b>Приветсвую</b>, вы запустили бота для работы с <b>Monobank open API</b>'
             if db.search((find.id == message.chat.id))[0]["api"] == None:
                 startMessage += '\n<code>Вы не добавили токен, добавьте его через меню</code>'
             bot.send_message(message.chat.id, startMessage, parse_mode="HTML", reply_markup=keyboard)
+        #Настройки
         elif text == 'Настройки':
             bot.send_message(message.chat.id, "Вы перешли в настройки", parse_mode="HTML", reply_markup=keyboardOpt)
-        elif text == '/adduser':
+        #Добавление пользователя
+        elif text == '/adduser' and message.chat.id == admin_id:
             bot.send_message(message.chat.id, "Введите id пользователя", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, adduser)
+        #Переход в меню "Управление токеном"
         elif text == 'Управление токеном':
             bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", reply_markup=keyboardToken)
+        #Изменить токен
         elif text == '/changetoken' or text == 'Изменить токен':
             bot.send_message(message.chat.id, "Введите токен, взять вы его можете тут:\nhttps://api.monobank.ua/", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, changetoken)
+        #Удалить токен
         elif text == '/deltoken' or text == 'Удалить токен':
             bot.send_message(message.chat.id, "Вы успешно удалили токен", reply_markup=keyboardToken)
             db.update({'api': None}, find.id == message.chat.id)
+        #Сбросить все настройки
         elif text == '/reset' or text == 'Сбросить настройки':
             bot.send_message(message.chat.id, "Вы уверены что ходите сбросить настройки бота?", reply_markup=keyboardDelToken)
             bot.register_next_step_handler(message, reset)
+        #Посмотреть токен
         elif text == '/token' or text == 'Просмотреть токен':
             bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{db.search((find.id == int(message.chat.id)))[0]["api"]}</code>', parse_mode="HTML")
+        #Назад в главное меню
         elif text == 'Назад':
-            bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)  
+            bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
+        #Баланс
         elif text == '/balance' or text == 'Баланс':
             user = db.search((find.id == message.chat.id))[0]
             headers = {'X-Token': user["api"]}
@@ -76,7 +104,7 @@ def send_text(message):
                     api = {"accounts": [{"currencyCode": 980, "balance": 0, "type": "black"}]}
                 bot.send_message(message.chat.id, f'<code>{result}</code>{balance(api)}', parse_mode="HTML", reply_markup=keyboard)
     else:
-        bot.send_message(message.chat.id, 'Вас сюда нельзя')
+        bot.send_message(message.chat.id, 'Вам сюда нельзя')
 
 def adduser(message):
     if message.text != 'Назад':
