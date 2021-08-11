@@ -28,7 +28,7 @@ admin_id = int(config["MonoApi"]["admin"])
 
 #Проверка существования db.json
 if db.search((find.id == admin_id)) == []:
-    db.insert({'id': int(admin_id), 'name': None, "delay": 0, "api": None, "req": None})
+    db.insert({'id': int(admin_id), 'name': None, "delay": 0, "debug": True, "api": None, "req": None})
     print("\nСоздана база данных с доступом для админа.")
 
 #Запуск бота
@@ -80,8 +80,18 @@ def send_text(message):
         #Назад в главное меню
         elif text == 'Назад':
             bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
+        #Курс валют
         elif text == 'Курс валют':
             bot.send_message(message.chat.id, currency(), parse_mode="HTML")
+        elif text == 'Переключить режим откладки':
+            user = db.search((find.id == message.chat.id))[0]
+            if user["debug"] == True:
+                db.update({'debug': False}, find.id == message.chat.id)
+                res = 'Отладочная информация выключена'
+            elif user["debug"] == False:
+                db.update({'debug': True}, find.id == message.chat.id)
+                res = 'Отладочная информация включена'
+            bot.send_message(message.chat.id, res)
         #Баланс
         elif text == '/balance' or text == 'Баланс':
             user = db.search((find.id == message.chat.id))[0]
@@ -111,6 +121,8 @@ def send_text(message):
                 else:
                     result = "no cache\n"
                     api = {"accounts": [{"currencyCode": 980, "balance": 0, "type": "black"}]}
+                if user["debug"] != True:
+                    result = str()
                 bot.send_message(message.chat.id, f'<code>{result}</code>{balance(api)}', parse_mode="HTML", reply_markup=keyboard)
     else:
         bot.send_message(message.chat.id, 'Вам сюда нельзя')
@@ -118,10 +130,10 @@ def send_text(message):
 def adduser(message):
     if message.text != 'Назад':
         if message.forward_from == None:
-            db.insert({'id': int(message.text), 'name': None, "delay": 0, "api": None, "req": None})
+            db.insert({'id': int(message.text), 'name': None, "delay": 0, "debug": False, "api": None, "req": None})
             bot.send_message(message.chat.id, f'Вы успешно добавили пользователя: <code>{message.text}</code>', parse_mode="HTML", reply_markup=keyboard)
         else:
-            db.insert({'id': message.forward_from.id, 'name': None, "delay": 0, "api": None, "req": None})
+            db.insert({'id': message.forward_from.id, 'name': None, "delay": 0, "debug": False, "api": None, "req": None})
             bot.send_message(message.chat.id, f'Вы успешно добавили пользователя: <code>{message.forward_from.id}</code>', parse_mode="HTML", reply_markup=keyboard)
 def changetoken(message):
     if message.text != 'Назад':
