@@ -1,4 +1,4 @@
-import time, base64
+import time, base64, json
 
 #Закодировать в b64
 def b64encode(text):
@@ -53,3 +53,14 @@ def balance(api):
         elif api["accounts"][numb]["currencyCode"] == 985:
             alr_res += str(f'<b>PLN</b> <code>{convert(bal)}</code>\n')
     return f'Основные счета:\n{osn_res}\nВалютные счета:\n{alr_res[:-1]}'
+
+#Курс валют
+def currency():
+    f = open("currency.json", "r")
+    cur = json.loads(f.read())
+    f.close
+    res = str('Покупка/Продажа')
+    res += f'\n<b>USD:</b> <code>{cur[0]["rateBuy"]}/{cur[0]["rateSell"]}</code>'
+    res += f'\n<b>EUR:</b> <code>{cur[1]["rateBuy"]}/{cur[1]["rateSell"]}</code>'
+    res += f'\n<b>RUB:</b> <code>{cur[2]["rateBuy"]}/{cur[2]["rateSell"]}</code>'
+    return res

@@ -80,6 +80,8 @@ def send_text(message):
         #Назад в главное меню
         elif text == 'Назад':
             bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
+        elif text == 'Курс валют':
+            bot.send_message(message.chat.id, currency(), parse_mode="HTML")
         #Баланс
         elif text == '/balance' or text == 'Баланс':
             user = db.search((find.id == message.chat.id))[0]
