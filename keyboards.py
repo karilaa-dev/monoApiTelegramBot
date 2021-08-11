@@ -6,6 +6,7 @@ keyboard.row('Настройки')
 
 keyboardOpt = telebot.types.ReplyKeyboardMarkup(True)
 keyboardOpt.row('Управление токеном')
+keyboardOpt.row('Переключить режим откладки')
 keyboardOpt.row('Сбросить настройки')
 keyboardOpt.row('Назад')
 
