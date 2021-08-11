@@ -1,6 +1,7 @@
 import telebot
 keyboard = telebot.types.ReplyKeyboardMarkup(True)
 keyboard.row('Баланс')
+keyboard.row('Курс валют')
 keyboard.row('Настройки')
 
 keyboardOpt = telebot.types.ReplyKeyboardMarkup(True)

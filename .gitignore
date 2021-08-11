@@ -8,3 +8,4 @@ __pycache__/
 /db.json
 /test.py
 /monoApi.code-workspace
+/currency.json
