@@ -26,6 +26,9 @@ config.read("config.ini")
 #Загрузка id админа
 admin_id = int(config["MonoApi"]["admin"])
 
+#Пауза для команды назад
+pause = False
+
 #Проверка существования db.json
 if db.search((find.id == admin_id)) == []:
     db.insert({'id': int(admin_id), 'name': None, "delay": 0, "debug": True, "api": None, "req": None})
@@ -38,6 +41,7 @@ print("Бот запущен")
 #Основной блок бота
 @bot.message_handler(content_types=['text'])
 def send_text(message):
+    global pause
     bot.register_next_step_handler(message, send_text)
     text = message.text
     #Проверка доступа
@@ -59,6 +63,7 @@ def send_text(message):
             bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", reply_markup=keyboardToken)
         #Изменить токен
         elif text == 'Изменить токен' or text == '/changetoken':
+            pause = True
             bot.send_message(message.chat.id, "Введите токен, взять вы его можете тут:\nhttps://api.monobank.ua/", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, changetoken)
         #Удалить токен
@@ -79,7 +84,8 @@ def send_text(message):
             bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{result}</code>', parse_mode="HTML")
         #Назад в главное меню
         elif text == 'Назад':
-            bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
+            if pause == False:
+                bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
         #Курс валют
         elif text == 'Курс валют' or text == '/currency':
             bot.send_message(message.chat.id, currency(), parse_mode="HTML")
@@ -152,6 +158,10 @@ def changetoken(message):
                 bot.send_message(message.chat.id, 'Вы успешно изменили токен', reply_markup=keyboard)
         else:
             bot.send_message(message.chat.id, 'Ошибка, вы ввели неправильный токен', reply_markup=keyboardOpt)
+    elif message.text == 'Назад':
+        bot.send_message(message.chat.id, "Вы перешли в настройки", parse_mode="HTML", reply_markup=keyboardToken)
+    global pause
+    pause = False
 def reset(message):
     if message.text == 'Нет':
         bot.send_message(message.chat.id, 'Вы перешли в настройки', reply_markup=keyboardOpt)
