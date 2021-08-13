@@ -14,11 +14,11 @@ find = Query()
 #Проверка существования config.ini
 if not os.path.exists('config.ini'):
     print("Не найден конфиг файл!!!")
-    token_req = input("Введите токен бота:\n")
-    admin_req = input("Введите айди админа:\n")
+    token_req = input("Введите токен бота:\n> ")
+    admin_req = input("Введите айди админа:\n> ")
     config['MonoApi'] = {'token': token_req, 'admin': admin_req}
     config.write(open('config.ini', 'w'))
-    print("'nСоздан файл с конфигом, при нужде его можно подправить вручную.")
+    print("Создан файл с конфигом, при нужде его можно подправить вручную.")
 
 #Загрузка конфига
 config.read("config.ini")
@@ -29,7 +29,7 @@ admin_id = int(config["MonoApi"]["admin"])
 #Проверка существования db.json
 if db.search((find.id == admin_id)) == []:
     db.insert({'id': int(admin_id), 'name': None, "delay": 0, "debug": True, "api": None, "req": None})
-    print("\nСоздана база данных с доступом для админа.")
+    print("Создана база данных с доступом для админа.\n")
 
 #Запуск бота
 bot = telebot.TeleBot(config["MonoApi"]["token"])
@@ -48,29 +48,29 @@ def send_text(message):
                 startMessage += '\n<code>Вы не добавили токен, добавьте его через меню</code>'
             bot.send_message(message.chat.id, startMessage, parse_mode="HTML", reply_markup=keyboard)
         #Настройки
-        elif text == 'Настройки':
+        elif text == 'Настройки' or text == '/options':
             bot.send_message(message.chat.id, "Вы перешли в настройки", parse_mode="HTML", reply_markup=keyboardOpt)
         #Добавление пользователя
         elif text == '/adduser' and message.chat.id == admin_id:
             bot.send_message(message.chat.id, "Введите id пользователя", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, adduser)
         #Переход в меню "Управление токеном"
-        elif text == 'Управление токеном':
+        elif text == 'Управление токеном' or text == '/tokenmenu':
             bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", reply_markup=keyboardToken)
         #Изменить токен
-        elif text == '/changetoken' or text == 'Изменить токен':
+        elif text == 'Изменить токен' or text == '/changetoken':
             bot.send_message(message.chat.id, "Введите токен, взять вы его можете тут:\nhttps://api.monobank.ua/", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, changetoken)
         #Удалить токен
-        elif text == '/deltoken' or text == 'Удалить токен':
+        elif text == 'Удалить токен' or text == '/deltoken':
             bot.send_message(message.chat.id, "Вы успешно удалили токен", reply_markup=keyboardToken)
             db.update({'api': None}, find.id == message.chat.id)
         #Сбросить все настройки
-        elif text == '/reset' or text == 'Сбросить настройки':
+        elif text == 'Сбросить настройки' or text == '/reset':
             bot.send_message(message.chat.id, "Вы уверены что ходите сбросить настройки бота?", reply_markup=keyboardDelToken)
             bot.register_next_step_handler(message, reset)
         #Посмотреть токен
-        elif text == '/token' or text == 'Просмотреть токен':
+        elif text == 'Просмотреть токен' or text == '/token':
             dbreq = db.search((find.id == int(message.chat.id)))[0]["api"]
             if dbreq != None:
                 result = b64decode(dbreq)
@@ -81,9 +81,9 @@ def send_text(message):
         elif text == 'Назад':
             bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
         #Курс валют
-        elif text == 'Курс валют':
+        elif text == 'Курс валют' or text == '/currency':
             bot.send_message(message.chat.id, currency(), parse_mode="HTML")
-        elif text == 'Переключить режим откладки':
+        elif text == 'Переключить режим откладки' or text == '/debug':
             user = db.search((find.id == message.chat.id))[0]
             if user["debug"] == True:
                 db.update({'debug': False}, find.id == message.chat.id)
@@ -93,7 +93,7 @@ def send_text(message):
                 res = 'Отладочная информация включена'
             bot.send_message(message.chat.id, res)
         #Баланс
-        elif text == '/balance' or text == 'Баланс':
+        elif text == 'Баланс' or text == '/balance' :
             user = db.search((find.id == message.chat.id))[0]
             if user["api"] == None:
                 bot.send_message(message.chat.id, 'Вы не добавили токен, добавте его через меню', reply_markup=keyboard)
