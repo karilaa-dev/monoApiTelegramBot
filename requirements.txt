@@ -1,0 +1,3 @@
+requests==2.25.1
+pyTelegramBotAPI==3.8.2
+tinydb==4.5.1
