@@ -56,7 +56,7 @@ def send_text(message):
             bot.send_message(message.chat.id, "Вы перешли в настройки", parse_mode="HTML", reply_markup=keyboardOpt)
         #Добавление пользователя
         elif text == '/adduser' and message.chat.id == admin_id:
-            bot.send_message(message.chat.id, "Введите id пользователя", reply_markup=keyboardBack)
+            bot.send_message(message.chat.id, "Введите id пользователя, или перешлите его сообщение", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, adduser)
         #Переход в меню "Управление токеном"
         elif text == 'Управление токеном' or text == '/tokenmenu':
@@ -159,7 +159,7 @@ def changetoken(message):
         else:
             bot.send_message(message.chat.id, 'Ошибка, вы ввели неправильный токен', reply_markup=keyboardOpt)
     elif message.text == 'Назад':
-        bot.send_message(message.chat.id, "Вы перешли в настройки", parse_mode="HTML", reply_markup=keyboardToken)
+        bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", parse_mode="HTML", reply_markup=keyboardToken)
     global pause
     pause = False
 def reset(message):
