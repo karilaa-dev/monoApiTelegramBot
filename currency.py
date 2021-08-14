@@ -1,6 +1,10 @@
-#Скрипт для запроса курса валют через api монобанка раз в пол часа
 from requests import get
 from time import sleep
+import datetime
+
+#Текущее время
+def timenow():
+    return datetime.datetime.today().strftime("%B %d %H:%M:%S")
 
 #Бесконечный луп
 while True:
@@ -11,9 +15,9 @@ while True:
         cur = open("currency.json", "w")
         cur.write(req)
         cur.close()
-        print('Done')
+        print(f'{timenow()}: Done')
     else:
     #Вывод ошибки при ошибке
-        print('Error')
-    #Задержка 30 минут
-    sleep(1800)
+        print(f'{timenow()}: Error')
+    #Задержка 60 минут 
+    sleep(3600)
