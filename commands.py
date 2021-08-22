@@ -1,4 +1,9 @@
-import time, base64, json
+import base64
+from json import loads as jloads
+from time import time, sleep
+from datetime import datetime
+from requests import get
+
 
 #Закодировать в b64
 def b64encode(text):
@@ -22,9 +27,13 @@ def convert(bal):
         money = '0.0'+bal[-2:]
         return money
 
+#Текущее время
+def timenow():
+    return datetime.today().strftime("%B %d %H:%M:%S.%f")
+
 #Унать время в UNIX
 def tCurrent():
-    return int(time.time())
+    return int(time())
 
 #Кешированый ответ
 def balance(api):
@@ -57,10 +66,31 @@ def balance(api):
 #Курс валют
 def currency():
     f = open("currency.json", "r")
-    cur = json.loads(f.read())
+    cur = jloads(f.read())
     f.close
     res = str('Покупка/Продажа')
     res += f'\n<b>USD:</b> <code>{cur[0]["rateBuy"]}/{cur[0]["rateSell"]}</code>'
     res += f'\n<b>EUR:</b> <code>{cur[1]["rateBuy"]}/{cur[1]["rateSell"]}</code>'
     res += f'\n<b>RUB:</b> <code>{cur[2]["rateBuy"]}/{cur[2]["rateSell"]}</code>'
     return res
+
+#Запрос курса валют раз в час
+def cureq():
+    #Текущее время
+    def timenow():
+        return datetime.today().strftime("%B %d %H:%M:%S")
+    #Бесконечный луп
+    while True:
+        #Запрос курсов
+        req = get("https://api.monobank.ua/bank/currency").text
+        if "errorDescription" not in req:
+        #Сохранение запроса
+            cur = open("currency.json", "w")
+            cur.write(req)
+            cur.close()
+            print(f'{timenow()}: Done')
+        else:
+        #Вывод ошибки при ошибке
+            print(f'{timenow()}: Error')
+        #Задержка 60 минут 
+        sleep(3600)

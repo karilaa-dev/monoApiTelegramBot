@@ -1,47 +1,21 @@
 import requests, json, time, telebot, re, os
 from configparser import ConfigParser as configparser
 from tinydb import TinyDB, Query
+from multiprocessing import Process
 #Импорт команд
 from commands import *
 #Импорт клавиатур
 from keyboards import *
 
-#Настройка базы и чтения конфига
-config = configparser()
-db = TinyDB('db.json')
-find = Query()
-
-#Проверка существования config.ini
-if not os.path.exists('config.ini'):
-    print("Не найден конфиг файл!!!")
-    token_req = input("Введите токен бота:\n> ")
-    admin_req = input("Введите айди админа:\n> ")
-    config['MonoApi'] = {'token': token_req, 'admin': admin_req}
-    config.write(open('config.ini', 'w'))
-    print("Создан файл с конфигом, при нужде его можно подправить вручную.")
-
 #Загрузка конфига
+config = configparser()
 config.read("config.ini")
 
-#Загрузка id админа
-admin_id = int(config["MonoApi"]["admin"])
-
-#Пауза для команды назад
-pause = False
-
-#Проверка существования db.json
-if db.search((find.id == admin_id)) == []:
-    db.insert({'id': int(admin_id), 'name': None, "delay": 0, "debug": True, "api": None, "req": None})
-    print("Создана база данных с доступом для админа.\n")
-
-#Запуск бота
 bot = telebot.TeleBot(config["MonoApi"]["token"])
-print("Бот запущен")
 
 #Основной блок бота
 @bot.message_handler(content_types=['text'])
 def send_text(message):
-    global pause
     bot.register_next_step_handler(message, send_text)
     text = message.text
     #Проверка доступа
@@ -63,7 +37,6 @@ def send_text(message):
             bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", reply_markup=keyboardToken)
         #Изменить токен
         elif text == 'Изменить токен' or text == '/changetoken':
-            pause = True
             bot.send_message(message.chat.id, "Введите токен, взять вы его можете тут:\nhttps://api.monobank.ua/", reply_markup=keyboardBack)
             bot.register_next_step_handler(message, changetoken)
         #Удалить токен
@@ -84,8 +57,7 @@ def send_text(message):
             bot.send_message(message.chat.id, f'<b>Ваш токен:</b>\n<code>{result}</code>', parse_mode="HTML")
         #Назад в главное меню
         elif text == 'Назад':
-            if pause == False:
-                bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
+            bot.send_message(message.chat.id, "Переход в главное меню", reply_markup=keyboard)
         #Курс валют
         elif text == 'Курс валют' or text == '/currency':
             bot.send_message(message.chat.id, currency(), parse_mode="HTML")
@@ -158,10 +130,6 @@ def changetoken(message):
                 bot.send_message(message.chat.id, 'Вы успешно изменили токен', reply_markup=keyboard)
         else:
             bot.send_message(message.chat.id, 'Ошибка, вы ввели неправильный токен', reply_markup=keyboardOpt)
-    elif message.text == 'Назад':
-        bot.send_message(message.chat.id, "Вы перешли в меню управления токеном", parse_mode="HTML", reply_markup=keyboardToken)
-    global pause
-    pause = False
 def reset(message):
     if message.text == 'Нет':
         bot.send_message(message.chat.id, 'Вы перешли в настройки', reply_markup=keyboardOpt)
@@ -170,4 +138,33 @@ def reset(message):
         db.update({'req': None}, find.id == message.chat.id)
         db.update({'name': None}, find.id == message.chat.id)
         bot.send_message(message.chat.id, 'Вы сбросили настройки', reply_markup=keyboard)
-bot.polling(none_stop=True)
+
+if __name__ == '__main__':
+
+    #Загрузка id админа
+    admin_id = int(config["MonoApi"]["admin"])
+
+    #Загрузка базы данных
+    db = TinyDB('db.json')
+    find = Query()
+
+    #Проверка существования config.ini
+    if not os.path.exists('config.ini'):
+        print("Не найден конфиг файл!!!")
+        token_req = input("Введите токен бота:\n> ")
+        admin_req = input("Введите айди админа:\n> ")
+        config['MonoApi'] = {'token': token_req, 'admin': admin_req}
+        config.write(open('config.ini', 'w'))
+        print("Создан файл с конфигом, при нужде его можно подправить вручную.")
+
+    #Проверка существования db.json
+    if db.search((find.id == admin_id)) == []:
+        db.insert({'id': int(admin_id), 'name': None, "delay": 0, "debug": True, "api": None, "req": None})
+        print("Создана база данных с доступом для админа.\n")
+
+    #Запуск бота
+    print("Бот запущен")
+
+    cur = Process(target=cureq).start()
+    bot.polling(none_stop=True)
+    
