@@ -1,7 +1,7 @@
-from telebot import Telebot as telebot
+from telebot import TeleBot as telebot
 from os import path
 from re import match
-from requests import ger as rget
+from requests import get as rget
 from json import loads as jloads
 from configparser import ConfigParser as configparser
 from tinydb import TinyDB, Query
