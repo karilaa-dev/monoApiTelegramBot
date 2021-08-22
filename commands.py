@@ -7,25 +7,23 @@ from requests import get
 
 #Закодировать в b64
 def b64encode(text):
-    bytes = base64.b64encode(text.encode("ascii"))
-    return bytes.decode("ascii")
+    result = base64.b64encode(text.encode("ascii"))
+    return result.decode("ascii")
 
 #Разкодировать из b64
 def b64decode(text):
-    bytes = base64.b64decode(text.encode("ascii"))
-    return bytes.decode("ascii")
+    result = base64.b64decode(text.encode("ascii"))
+    return result.decode("ascii")
 
 #Визуальный разделитель для денег
 def convert(bal):
     if len(bal) >= 3:
         money = bal[:-2]+'.'+bal[-2:]
-        return money
     elif len(bal) == 2:
         money = '0.'+bal[-2:]
-        return money
     elif len(bal) == 1:
         money = '0.0'+bal[-2:]
-        return money
+    return money
 
 #Текущее время
 def timenow():
@@ -40,19 +38,19 @@ def balance(api):
     osn_res, alr_res = str(), str()
     for numb in range (0, len(api["accounts"])):
         bal = str(api["accounts"][numb]["balance"])
-        type = api["accounts"][numb]["type"]
-        if api["accounts"][numb]["currencyCode"] == 980 and type != 'white' and type != 'fop':
-            osn_res += str(f'<b>{type.capitalize()}</b> <code>{convert(bal)}</code>\n')
+        btype = api["accounts"][numb]["type"]
+        if api["accounts"][numb]["currencyCode"] == 980 and btype != 'white' and btype != 'fop':
+            osn_res += str(f'<b>{btype.capitalize()}</b> <code>{convert(bal)}</code>\n')
     for numb in range (0, len(api["accounts"])):
         bal = str(api["accounts"][numb]["balance"])
-        type = api["accounts"][numb]["type"]
-        if type == 'white':
-            osn_res += str(f'<b>{type.capitalize()}</b> <code>{convert(bal)}</code>\n')
+        btype = api["accounts"][numb]["type"]
+        if btype == 'white':
+            osn_res += str(f'<b>{btype.capitalize()}</b> <code>{convert(bal)}</code>\n')
     for numb in range (0, len(api["accounts"])):
         bal = str(api["accounts"][numb]["balance"])
-        type = api["accounts"][numb]["type"]
-        if type == 'fop':
-            osn_res += str(f'<b>{type.capitalize()}</b> <code>{convert(bal)}</code>\n')
+        btype = api["accounts"][numb]["type"]
+        if btype == 'fop':
+            osn_res += str(f'<b>{btype.capitalize()}</b> <code>{convert(bal)}</code>\n')
     for numb in range (0, len(api["accounts"])):
         bal = str(api["accounts"][numb]["balance"])
         if api["accounts"][numb]["currencyCode"] == 840:
@@ -65,9 +63,8 @@ def balance(api):
 
 #Курс валют
 def currency():
-    f = open("currency.json", "r")
-    cur = jloads(f.read())
-    f.close
+    with open("currency.json", "r") as f:
+        cur = jloads(f.read())
     res = str('Покупка/Продажа')
     res += f'\n<b>USD:</b> <code>{cur[0]["rateBuy"]}/{cur[0]["rateSell"]}</code>'
     res += f'\n<b>EUR:</b> <code>{cur[1]["rateBuy"]}/{cur[1]["rateSell"]}</code>'

@@ -1,7 +1,12 @@
-import requests, json, time, telebot, re, os
+from telebot import Telebot as telebot
+from os import path
+from re import match
+from requests import ger as rget
+from json import loads as jloads
 from configparser import ConfigParser as configparser
 from tinydb import TinyDB, Query
 from multiprocessing import Process
+
 #Импорт команд
 from commands import *
 #Импорт клавиатур
@@ -11,7 +16,7 @@ from keyboards import *
 config = configparser()
 config.read("config.ini")
 
-bot = telebot.TeleBot(config["MonoApi"]["token"])
+bot = telebot(config["MonoApi"]["token"])
 
 #Основной блок бота
 @bot.message_handler(content_types=['text'])
@@ -19,7 +24,7 @@ def send_text(message):
     bot.register_next_step_handler(message, send_text)
     text = message.text
     #Проверка доступа
-    if message.chat.id == admin_id or any(db.search((find.id == message.chat.id))) == True:
+    if message.chat.id == admin_id or any(db.search((find.id == message.chat.id))) is True:
         if text == '/start':
             startMessage = '<b>Приветсвую</b>, вы запустили бота для работы с <b>Monobank open API</b>'
             if db.search((find.id == message.chat.id))[0]["api"] == None:
@@ -50,7 +55,7 @@ def send_text(message):
         #Посмотреть токен
         elif text == 'Просмотреть токен' or text == '/token':
             dbreq = db.search((find.id == int(message.chat.id)))[0]["api"]
-            if dbreq != None:
+            if dbreq is not None:
                 result = b64decode(dbreq)
             else:
                 result = 'Токен отсутствует'
@@ -63,43 +68,43 @@ def send_text(message):
             bot.send_message(message.chat.id, currency(), parse_mode="HTML")
         elif text == 'Переключить режим откладки' or text == '/debug':
             user = db.search((find.id == message.chat.id))[0]
-            if user["debug"] == True:
+            if user["debug"] is True:
                 db.update({'debug': False}, find.id == message.chat.id)
                 res = 'Отладочная информация выключена'
-            elif user["debug"] == False:
+            elif user["debug"] is False:
                 db.update({'debug': True}, find.id == message.chat.id)
                 res = 'Отладочная информация включена'
             bot.send_message(message.chat.id, res)
         #Баланс
         elif text == 'Баланс' or text == '/balance' :
             user = db.search((find.id == message.chat.id))[0]
-            if user["api"] == None:
+            if user["api"] is None:
                 bot.send_message(message.chat.id, 'Вы не добавили токен, добавте его через меню', reply_markup=keyboard)
             else:
                 headers = {'X-Token': b64decode(user["api"])}
                 delay = user["delay"]
                 if delay < tCurrent():
-                    api = json.loads(requests.get("https://api.monobank.ua/personal/client-info",headers=headers).text)
+                    api = jloads(rget("https://api.monobank.ua/personal/client-info",headers=headers).text)
                     if "errorDescription" in api:
-                        if user["req"] == None:
+                        if user["req"] is None:
                             result = "no cache\n"
                             api = {"accounts": [{"currencyCode": 980, "balance": 0, "type": "black"}]}
-                        elif user["req"] != None:
+                        elif user["req"] is not None:
                             result = "request error, using cache\n"
                             api = user["req"]
                     else:
-                        if user["name"] == None:
+                        if user["name"] is None:
                             db.update({'name': api["name"]}, find.id == message.chat.id)
                         result = "new\n"
                         db.update({'req': api}, find.id == message.chat.id)
                     db.update({'delay': tCurrent()+30}, find.id == message.chat.id)
-                elif delay >= tCurrent() and user["req"] != None:
+                elif delay >= tCurrent() and user["req"] is not None:
                     result = "cache\n"
                     api = user["req"]
                 else:
                     result = "no cache\n"
                     api = {"accounts": [{"currencyCode": 980, "balance": 0, "type": "black"}]}
-                if user["debug"] != True:
+                if user["debug"] is not True:
                     result = str()
                 bot.send_message(message.chat.id, f'<code>{result}</code>{balance(api)}', parse_mode="HTML", reply_markup=keyboard)
     else:
@@ -107,7 +112,7 @@ def send_text(message):
 
 def adduser(message):
     if message.text != 'Назад':
-        if message.forward_from == None:
+        if message.forward_from is None:
             db.insert({'id': int(message.text), 'name': None, "delay": 0, "debug": False, "api": None, "req": None})
             bot.send_message(message.chat.id, f'Вы успешно добавили пользователя: <code>{message.text}</code>', parse_mode="HTML", reply_markup=keyboard)
         else:
@@ -115,9 +120,9 @@ def adduser(message):
             bot.send_message(message.chat.id, f'Вы успешно добавили пользователя: <code>{message.forward_from.id}</code>', parse_mode="HTML", reply_markup=keyboard)
 def changetoken(message):
     if message.text != 'Назад':
-        if re.match("^[A-Za-z0-9_-]*$", message.text) != None and len(message.text) == 44:
+        if match("^[A-Za-z0-9_-]*$", message.text) is not None and len(message.text) == 44:
             headers = {'X-Token': message.text}
-            tTest = json.loads(requests.get("https://api.monobank.ua/personal/client-info",headers=headers).text)
+            tTest = jloads(rget("https://api.monobank.ua/personal/client-info",headers=headers).text)
             if "errorDescription" in tTest:
                 if tTest["errorDescription"] == "Missing one of required headers 'X-Token' or 'X-Key-Id'" or tTest["errorDescription"] == "Unknown 'X-Token'":
                     bot.send_message(message.chat.id, 'Ошибка, вы ввели неправильный токен', reply_markup=keyboardOpt)
@@ -149,7 +154,7 @@ if __name__ == '__main__':
     find = Query()
 
     #Проверка существования config.ini
-    if not os.path.exists('config.ini'):
+    if not path.exists('config.ini'):
         print("Не найден конфиг файл!!!")
         token_req = input("Введите токен бота:\n> ")
         admin_req = input("Введите айди админа:\n> ")
@@ -167,4 +172,3 @@ if __name__ == '__main__':
 
     cur = Process(target=cureq).start()
     bot.polling(none_stop=True)
-    
