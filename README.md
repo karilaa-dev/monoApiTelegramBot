@@ -25,10 +25,7 @@ requirements.txt | Зависимости
 Установите нужные библиотеки:
     
     pip install -r requirements.txt
-Отдельно запустите парсер курсов валют (Я использую tmux):
-  
-    python3 currency.py
-И запустите самого бота:
+Запустите бота:
 
     python3 main.py
 ## Первый запуск:
