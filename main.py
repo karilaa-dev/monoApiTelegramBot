@@ -27,7 +27,7 @@ def send_text(message):
     if message.chat.id == admin_id or any(db.search((find.id == message.chat.id))) is True:
         if text == '/start':
             startMessage = '<b>Приветсвую</b>, вы запустили бота для работы с <b>Monobank open API</b>'
-            if db.search((find.id == message.chat.id))[0]["api"] == None:
+            if db.search((find.id == message.chat.id))[0]["api"] is None:
                 startMessage += '\n<code>Вы не добавили токен, добавьте его через меню</code>'
             bot.send_message(message.chat.id, startMessage, parse_mode="HTML", reply_markup=keyboard)
         #Настройки
