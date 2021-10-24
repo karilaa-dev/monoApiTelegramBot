@@ -181,7 +181,6 @@ async def send_reset(message: types.Message):
 
 @dp.callback_query_handler(lambda c: c.data.startswith('reset'))
 async def inline_reset(callback_query: types.CallbackQuery):
-    print('ok')
     if callback_query.data == 'reset_accept':
         db.update({'api': None, 'req': None, 'name': None}, find.id == callback_query.from_user.id)
         res = 'Вы успешно сбросили настройки'
