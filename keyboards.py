@@ -1,23 +1,29 @@
-from telebot import types
-keyboard = types.ReplyKeyboardMarkup(True)
+from aiogram.types import ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup
+keyboard = ReplyKeyboardMarkup(True)
 keyboard.row('Баланс')
 keyboard.row('Курс валют')
 keyboard.row('Настройки')
 
-keyboardOpt = types.ReplyKeyboardMarkup(True)
+keyboardOpt = ReplyKeyboardMarkup(True)
 keyboardOpt.row('Управление токеном')
 keyboardOpt.row('Переключить режим откладки')
 keyboardOpt.row('Сбросить настройки')
 keyboardOpt.row('Назад')
 
-keyboardToken = types.ReplyKeyboardMarkup(True)
+keyboardToken = ReplyKeyboardMarkup(True)
 keyboardToken.row('Просмотреть токен')
 keyboardToken.row('Изменить токен')
 keyboardToken.row('Удалить токен')
 keyboardToken.row('Назад')
 
-keyboardDelToken = types.ReplyKeyboardMarkup(True)
+keyboardDelToken = ReplyKeyboardMarkup(True)
 keyboardDelToken.row('Да', 'Нет')
 
-keyboardBack = types.ReplyKeyboardMarkup(True)
+keyboardBack = ReplyKeyboardMarkup(True)
 keyboardBack.row('Назад')
+
+reset_accept = InlineKeyboardButton('Да', callback_data='reset_accept')
+reset_cancel = InlineKeyboardButton('Нет', callback_data='reset_cancel')
+reset_buttons = InlineKeyboardMarkup().add(reset_accept, reset_cancel)
+
+add_token = InlineKeyboardMarkup().add(InlineKeyboardButton('Добавить токен', callback_data='add_token'))
