@@ -1,6 +1,6 @@
 import base64
 from json import loads as jloads
-from time import time, sleep
+from time import time
 from datetime import datetime
 from requests import get
 
@@ -27,14 +27,14 @@ def convert(bal):
 
 #Текущее время
 def timenow():
-    return datetime.today().strftime("%B %d %H:%M:%S.%f")
+    return datetime.today().strftime("%B %d %H:%M:%S")
 
 #Унать время в UNIX
 def tCurrent():
     return int(time())
 
 #Кешированый ответ
-def balance(api):
+async def balance(api):
     osn_res, alr_res = str(), str()
     for numb in range (0, len(api["accounts"])):
         bal = str(api["accounts"][numb]["balance"])
@@ -62,7 +62,7 @@ def balance(api):
     return f'Основные счета:\n{osn_res}\nВалютные счета:\n{alr_res[:-1]}'
 
 #Курс валют
-def currency():
+async def currency():
     with open("currency.json", "r") as f:
         cur = jloads(f.read())
     res = str('Покупка/Продажа')
@@ -72,22 +72,14 @@ def currency():
     return res
 
 #Запрос курса валют раз в час
-def cureq():
-    #Текущее время
-    def timenow():
-        return datetime.today().strftime("%B %d %H:%M:%S")
-    #Бесконечный луп
-    while True:
-        #Запрос курсов
-        req = get("https://api.monobank.ua/bank/currency").text
-        if "errorDescription" not in req:
-        #Сохранение запроса
-            cur = open("currency.json", "w")
-            cur.write(req)
-            cur.close()
-            print(f'{timenow()}: Done')
-        else:
-        #Вывод ошибки при ошибке
-            print(f'{timenow()}: Error')
-        #Задержка 60 минут 
-        sleep(3600)
+async def cureq():
+    #Запрос курсов
+    req = get("https://api.monobank.ua/bank/currency").text
+    if "errorDescription" not in req:
+    #Сохранение запроса
+        with open("currency.json", "w") as f:
+            f.write(req)
+        print(f'{timenow()}: Done')
+    else:
+    #Вывод ошибки при ошибке
+        print(f'{timenow()}: Error')
