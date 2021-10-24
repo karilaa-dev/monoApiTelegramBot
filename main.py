@@ -187,9 +187,9 @@ async def inline_reset(callback_query: types.CallbackQuery):
         res = 'Вы успешно сбросили настройки'
     else:
         res = 'Вы отменили сброс настроек'
-    id = callback_query.message.message_id
-    chat = callback_query.from_user.id
-    await bot.edit_message_text(message_id=id, chat_id=chat, text=res)
+    msg_id = callback_query.message.message_id
+    cht_id = callback_query.from_user.id
+    await bot.edit_message_text(message_id=msg_id, chat_id=cht_id, text=res)
     await callback_query.answer()
 
 @dp.message_handler(filters.Text(equals='Курс валют', ignore_case=True))
@@ -242,10 +242,11 @@ async def send_balance(message: types.Message):
                 await message.answer(f'<code>{result}</code>{bal}', parse_mode="HTML")
 
 if __name__ == '__main__':
+
     #Запуск бота
     print("Бот запущен")
     scheduler = AsyncIOScheduler()
     scheduler.add_job(cureq)
     scheduler.add_job(cureq, "interval", seconds=3600)
-    #scheduler.start()
+    scheduler.start()
     executor.start_polling(dp, skip_updates=True)
