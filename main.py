@@ -8,7 +8,6 @@ from re import match
 from requests import get as rget
 from configparser import ConfigParser as configparser
 from tinydb import TinyDB, Query
-from multiprocessing import Process
 
 #Импорт команд
 from commands import *
@@ -232,5 +231,8 @@ if __name__ == '__main__':
 
     #Запуск бота
     print("Бот запущен")
-    cur = Process(target=cureq).start()
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(cureq)
+    scheduler.add_job(cureq, "interval", seconds=3600)
+    scheduler.start()
     executor.start_polling(dp, skip_updates=True)
