@@ -104,8 +104,9 @@ async def send_options(message: types.Message):
 
 @dp.message_handler(commands=['adduser'])
 async def send_adduser(message: types.Message):
-    await message.reply("Введите id пользователя, или перешлите его сообщение", reply_markup=keyboardBack)
-    await opt.add.set()
+    if message.chat.id == admin_id:
+        await message.reply("Введите id пользователя, или перешлите его сообщение", reply_markup=keyboardBack)
+        await opt.add.set()
 
 @dp.message_handler(state=opt.add)
 async def send_adduser(message: types.Message, state: FSMContext):
