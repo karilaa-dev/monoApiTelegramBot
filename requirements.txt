@@ -1,4 +1,4 @@
-requests==2.26.0
+requests==2.31.0
 aiogram==2.15
 tgcrypto==1.2.2
 tinydb==4.5.2
